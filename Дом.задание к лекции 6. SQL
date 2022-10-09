@@ -1,0 +1,32 @@
+Домашнее задание по лекции 6. SQL.
+https://www.w3schools.com/sql/trysql.asp?filename=trysql_select_all
+
+1.	Выберите заказчиков из Германии, Франции и Мадрида, выведите их название, страну и адрес
+SELECT c.CustomerName, c.Country, c.Address FROM Customers c WHERE c.Country IN ('Germany', 'France') OR c.City = 'Madrid'
+
+2.	Выберите топ 3 страны по количеству заказчиков, выведите их названия и количество записей
+SELECT c.Country, COUNT() n FROM Customers c GROUP BY c.Country ORDER BY COUNT() DESC LIMIT 3
+
+3.	Выберите перевозчика, который отправил 10-й по времени заказ, выведите его название, и дату отправления.
+SELECT s.ShipperName, o.OrderDate FROM (SELECT*FROM (SELECT*FROM Orders ORDER BY OrderDate ASC LIMIT 10) ORDER BY OrderDate DESC LIMIT 1) o, Shippers s WHERE o.ShipperID = s.ShipperID
+
+4.	Выберите самый дорогой заказ, выведите список товаров с их ценами.
+SELECT p.ProductName, p.Unit, od.Quantity, p.Price FROM (SELECT o.OrderID FROM Orders o, OrderDetails od, Products p WHERE o.OrderID = od.OrderID AND od.ProductID = p.ProductID GROUP BY o.OrderID ORDER BY sum(od.Quantity*p.Price) DESC LIMIT 1) h, Orders o, OrderDetails od, Products p WHERE o.OrderID = h.OrderID AND od.OrderID = h.OrderID AND od.ProductID = p.ProductID
+
+5.	Какой товар больше всего заказывали по количеству единиц товара, выведите его название и количество единиц в каждом из заказов.
+SELECT p.ProductName, od.Quantity, od.OrderID FROM (SELECT od.ProductID pid FROM Orders o, OrderDetails od WHERE o.OrderID = od.OrderID GROUP BY od.ProductID ORDER BY sum(od.Quantity) DESC LIMIT 1) h, Products p, OrderDetails od WHERE p.ProductID = h.pid AND od.ProductID = h.pid
+
+6.	Выведите топ 5 поставщиков по количеству заказов, выведите их названия, страну, контактное лицо и телефон.
+SELECT sup.SupplierName, sup.Country, sup.ContactName, sup.Phone FROM Orders o, OrderDetails od, Products p, Suppliers sup WHERE o.OrderId = od.OrderID AND od.ProductID = p.ProductID AND p.SupplierID = sup.SupplierID GROUP BY p.SupplierID ORDER BY count() DESC LIMIT 5
+
+7.	Какую категорию товаров заказывали больше всего по стоимости в Бразилии, выведите страну, название категории и сумму.
+SELECT cust.Country, cat.CategoryName, sum(od.Quantity*p.Price) TotalPrice FROM Orders o, Customers cust, OrderDetails od, Products p, Categories cat WHERE o.CustomerID = cust.CustomerID AND cust.Country = 'Brazil' AND o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.CategoryID = cat.CategoryID GROUP BY p.CategoryID ORDER BY sum(od.Quantity*p.Price) DESC LIMIT 1
+
+8.	Какая разница в стоимости между самым дорогим и самым дешевым заказом из США.
+SELECT (max(orderPrices.OrderPrice) - min(orderPrices.OrderPrice)) PriceDifference FROM (SELECT o.OrderID, sum(od.Quantity*p.Price) OrderPrice FROM Orders o, OrderDetails od, Products p, Customers cust WHERE o.OrderID = od.OrderID AND p.ProductID = od.ProductID AND cust.CustomerID = o.CustomerID AND cust.Country = 'USA' GROUP BY o.OrderID) orderPrices
+
+9.	Выведите количество заказов у каждого их трех самых молодых сотрудников, а также имя и фамилию во второй колонке.
+SELECT count() OrdersCount, (e.FirstName || ' ' || e.LastName) FullName FROM Orders o, Employees e WHERE o.EmployeeID = e.EmployeeID GROUP BY e.EmployeeID ORDER BY e.BirthDate DESC LIMIT 3
+
+10.	Сколько банок крабового мяса всего было заказано.
+SELECT sum(od.Quantity) TotalCrabMeatQuantity FROM Orders o, OrderDetails od, Products p WHERE o.OrderID = od.OrderID AND od.ProductID = p.ProductID AND p.ProductName = 'Boston Crab Meat'
